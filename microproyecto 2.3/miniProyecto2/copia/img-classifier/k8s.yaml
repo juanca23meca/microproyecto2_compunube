@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mobilenet-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mobilenet
+  template:
+    metadata:
+      labels:
+        app: mobilenet
+    spec:
+      containers:
+      - name: api
+        image: local/mobilenet:1.0
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mobilenet-svc
+spec:
+  selector:
+    app: mobilenet
+  ports:
+  - port: 80
+    targetPort: 8080
